@@ -48,9 +48,7 @@ def main():
     sections = parse_sections(md_text)
     print(f"Parsed {len(sections)} department sections from {SOURCE_FILE}")
 
-    embed_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-        model_name=EMBEDDING_MODEL
-    )
+    embed_fn = embedding_functions.DefaultEmbeddingFunction()
     client = chromadb.PersistentClient(path=CHROMA_DIR)
 
     # Recreate the collection fresh each run so stale entries never linger.

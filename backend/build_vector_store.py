@@ -48,9 +48,7 @@ def load_chunks(path: str):
 
 def build_vector_store(chunks):
     print(f"Using default semantic embedding model ({EMBEDDING_MODEL}).")
-    embed_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
-        model_name=EMBEDDING_MODEL
-    )
+    embed_fn = embedding_functions.DefaultEmbeddingFunction()
 
     os.makedirs(CHROMA_DIR, exist_ok=True)
     client = chromadb.PersistentClient(path=CHROMA_DIR)
