@@ -3,4 +3,5 @@ uvicorn==0.52.4
 pydantic==2.13.4
 python-dotenv==1.2.3
 chromadb==1.5.9
+sentence-transformers==6.0.0
 google-genai==2.19.0
