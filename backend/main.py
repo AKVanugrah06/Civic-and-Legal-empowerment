@@ -84,7 +84,13 @@ STRICT RULES — follow all of these exactly:
 1. Answer ONLY using the information in the "CONTEXT" section below. Do not \
 use any outside knowledge of Indian law, even if you believe you know the \
 answer. If the context does not fully answer the question, say so rather \
-than filling gaps from memory.
+than filling gaps from memory. However, if the context includes general \
+procedural provisions (e.g. how/where to file a consumer complaint, which \
+authority handles a category of dispute) that would reasonably apply to \
+the user's situation even though it does not name their specific good, \
+service, or scenario, you should use that procedural information to \
+answer, while explicitly noting that the sources address the general \
+procedure rather than their specific situation by name.
 
 2. If the CONTEXT does not contain enough information to answer the \
 question, respond only with: "I don't have information on this in the \
@@ -242,11 +248,77 @@ def call_gemini_with_retry(user_message: str, config: types.GenerateContentConfi
             raise HTTPException(status_code=502, detail=f"Upstream API error: {e}")
 
 
+# Step 19 fix: the embedding model has weak associations for informal/
+# regional/colloquial words across tenancy, consumer, and RTI domains.
+# Expand the query text used ONLY for retrieval so these route to the
+# right Act; the user-facing question and the text sent to Gemini stay
+# unexpanded. Each category lists terms that trigger it; if any term is
+# present, its expansion phrase is appended (categories can stack).
+SYNONYM_EXPANSIONS = {
+    "food_service": {
+        "terms": ["mess", "hotel", "canteen", "dhaba", "eatery", "cafeteria"],
+        "expansion": "restaurant food service consumer complaint",
+    },
+    "landlord": {
+        "terms": ["house owner", "flat owner", "pg owner", "room owner", "landlady"],
+        "expansion": "landlord tenancy property manager",
+    },
+    "tenant_pg": {
+        "terms": ["renter", "lodger", "paying guest", " pg ", "pg accommodation"],
+        "expansion": "tenant rent tenancy",
+    },
+    "deposit": {
+        "terms": ["advance money", "token money", "security money", "caution deposit"],
+        "expansion": "security deposit tenancy",
+    },
+    "shopping": {
+        "terms": ["shop", "store", "dealer", "showroom", "vendor", "seller",
+                   "online seller", "amazon", "flipkart", "e-commerce", "ecommerce"],
+        "expansion": "consumer goods seller complaint",
+    },
+    "product_issue": {
+        "terms": ["defective", "faulty", "damaged item", "not working", "broken product"],
+        "expansion": "defective goods consumer complaint",
+    },
+    "refund": {
+        "terms": ["refund", "replacement", "exchange", "return the product"],
+        "expansion": "consumer refund replacement complaint",
+    },
+    "government_office": {
+        "terms": ["sarkari", "govt office", "government department", "govt department",
+                   "municipal office", "panchayat", "ward office", "govt hospital",
+                   "government hospital", "govt school", "government school",
+                   "police station"],
+        "expansion": "public authority government department right to information",
+    },
+}
+
+
+def expand_query_for_retrieval(question: str) -> str:
+    lower_q = f" {question.lower()} "
+    expansions = []
+    for category in SYNONYM_EXPANSIONS.values():
+        if any(term in lower_q for term in category["terms"]):
+            expansions.append(category["expansion"])
+    if not expansions:
+        return question
+    # De-duplicate while preserving order, in case multiple categories
+    # happen to share wording.
+    seen = set()
+    unique_expansions = []
+    for exp in expansions:
+        if exp not in seen:
+            seen.add(exp)
+            unique_expansions.append(exp)
+    return question + " " + " ".join(unique_expansions)
+
+
 def retrieve_context(question: str, top_k: int = TOP_K, threshold: float = DISTANCE_THRESHOLD):
     """Return a list of {text, source, section_number, chapter, distance}
     dicts for chunks under the distance threshold. Empty list means
     'nothing relevant enough was found'."""
-    results = _collection.query(query_texts=[question], n_results=top_k)
+    retrieval_query = expand_query_for_retrieval(question)
+    results = _collection.query(query_texts=[retrieval_query], n_results=top_k)
 
     ids = results["ids"][0]
     documents = results["documents"][0]
@@ -322,7 +394,8 @@ def retrieve_department_match(request_text: str, threshold: float = DEPARTMENT_D
     if _department_collection is None:
         return None, None, False
 
-    results = _department_collection.query(query_texts=[request_text], n_results=1)
+    retrieval_query = expand_query_for_retrieval(request_text)
+    results = _department_collection.query(query_texts=[retrieval_query], n_results=1)
     ids = results["ids"][0]
     if not ids:
         return None, None, False

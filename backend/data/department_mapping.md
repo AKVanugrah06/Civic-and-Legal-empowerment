@@ -13,6 +13,10 @@ a placeholder for the user to fill in rather than guessing.
 Format: one entry per topic area, with example request types and the
 department/PIO to address.
 
+## Public Hospital / Health Services
+- Example requests: staff vacancies, hospital equipment status, medicine stock shortage, treatment records
+- Department: State/District Health Department — District Medical Officer / Chief Medical Officer
+
 ---
 
 ## Ration Card / Public Distribution System
@@ -37,7 +41,7 @@ department/PIO to address.
 
 ## Employment Guarantee Scheme (MGNREGA)
 - Example requests: wage payment delay, job card issues, muster roll records
-- Department: Ministry of Rural Development (central) / District Rural Development Agency (state-level)
+- Department: District Rural Development Agency (state-level) — Programme Officer, MGNREGA
 
 ## Passport
 - Example requests: passport application delay, police verification status
@@ -65,7 +69,7 @@ department/PIO to address.
 
 ## Central Government Employment / Recruitment
 - Example requests: exam result details, recruitment process status, reservation roster
-- Department: Union Public Service Commission (UPSC) or the concerned Ministry/Department, depending on the recruiting body
+- Department: Union Public Service Commission (UPSC) or concerned recruiting Ministry/Department — Central Public Information Officer (CPIO)
 
 ---
 
