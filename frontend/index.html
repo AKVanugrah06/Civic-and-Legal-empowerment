@@ -176,12 +176,45 @@
   }
 
   .carousel-viewport {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
     gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .carousel-viewport::-webkit-scrollbar { display: none; }
+
+  .carousel-viewport .topic-card {
+    scroll-snap-align: center;
+    flex: 0 0 calc(33.333% - 9.4px);
+    min-width: 240px;
   }
   @media (max-width: 720px) {
-    .carousel-viewport { grid-template-columns: 1fr; }
+    .carousel-viewport .topic-card { flex-basis: 84%; min-width: 0; }
+  }
+
+  .carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 14px;
+  }
+  .carousel-dots button {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    background: var(--line);
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .carousel-dots button.active {
+    background: var(--marigold);
+    transform: scale(1.3);
   }
 
   .topic-card {
@@ -273,177 +306,6 @@
     color: var(--marigold-soft);
     white-space: nowrap;
   }
-
-  /* ---------------------------------------------------------------- */
-  /* GradientWaves background                                          */
-  /* ---------------------------------------------------------------- */
-  #gradientBg {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-  }
-  #gradientBg canvas { display: block; width: 100%; height: 100%; }
-  .gradient-waves-container { position: relative; width: 100%; height: 100%; overflow: hidden; }
-
-  /* ---------------------------------------------------------------- */
-  /* BorderGlow — hover-tracking mesh-gradient border                  */
-  /* ---------------------------------------------------------------- */
-  .border-glow-card {
-    --edge-proximity: 0;
-    --cursor-angle: 45deg;
-    --edge-sensitivity: 30;
-    --color-sensitivity: calc(var(--edge-sensitivity) + 20);
-    --border-radius: 14px;
-    --glow-padding: 30px;
-    --cone-spread: 25;
-
-    position: relative;
-    border-radius: var(--border-radius);
-    isolation: isolate;
-    transform: translate3d(0, 0, 0.01px);
-    display: grid;
-    overflow: visible;
-  }
-
-  .border-glow-card::before,
-  .border-glow-card::after,
-  .border-glow-card > .edge-light {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    transition: opacity 0.25s ease-out;
-    z-index: -1;
-  }
-
-  .border-glow-card:not(:hover):not(.sweep-active)::before,
-  .border-glow-card:not(:hover):not(.sweep-active)::after,
-  .border-glow-card:not(:hover):not(.sweep-active) > .edge-light {
-    opacity: 0;
-    transition: opacity 0.75s ease-in-out;
-  }
-
-  .border-glow-card::before {
-    border: 1px solid transparent;
-    background:
-      linear-gradient(var(--card-bg, #fff) 0 100%) padding-box,
-      linear-gradient(rgb(255 255 255 / 0%) 0% 100%) border-box,
-      var(--gradient-one) border-box,
-      var(--gradient-two) border-box,
-      var(--gradient-three) border-box,
-      var(--gradient-four) border-box,
-      var(--gradient-five) border-box,
-      var(--gradient-six) border-box,
-      var(--gradient-seven) border-box,
-      var(--gradient-base) border-box;
-
-    opacity: calc((var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
-
-    mask-image:
-      conic-gradient(
-        from var(--cursor-angle) at center,
-        black calc(var(--cone-spread) * 1%),
-        transparent calc((var(--cone-spread) + 15) * 1%),
-        transparent calc((100 - var(--cone-spread) - 15) * 1%),
-        black calc((100 - var(--cone-spread)) * 1%)
-      );
-  }
-
-  .border-glow-card::after {
-    border: 1px solid transparent;
-    background:
-      var(--gradient-one) padding-box,
-      var(--gradient-two) padding-box,
-      var(--gradient-three) padding-box,
-      var(--gradient-four) padding-box,
-      var(--gradient-five) padding-box,
-      var(--gradient-six) padding-box,
-      var(--gradient-seven) padding-box,
-      var(--gradient-base) padding-box;
-
-    mask-image:
-      linear-gradient(to bottom, black, black),
-      radial-gradient(ellipse at 50% 50%, black 40%, transparent 65%),
-      radial-gradient(ellipse at 66% 66%, black 5%, transparent 40%),
-      radial-gradient(ellipse at 33% 33%, black 5%, transparent 40%),
-      radial-gradient(ellipse at 66% 33%, black 5%, transparent 40%),
-      radial-gradient(ellipse at 33% 66%, black 5%, transparent 40%),
-      conic-gradient(from var(--cursor-angle) at center, transparent 5%, black 15%, black 85%, transparent 95%);
-
-    mask-composite: subtract, add, add, add, add, add;
-    opacity: calc(var(--fill-opacity, 0.35) * (var(--edge-proximity) - var(--color-sensitivity)) / (100 - var(--color-sensitivity)));
-    mix-blend-mode: soft-light;
-  }
-
-  .border-glow-card > .edge-light {
-    inset: calc(var(--glow-padding) * -1);
-    pointer-events: none;
-    z-index: 1;
-
-    mask-image:
-      conic-gradient(
-        from var(--cursor-angle) at center, black 2.5%, transparent 10%, transparent 90%, black 97.5%
-      );
-
-    opacity: calc((var(--edge-proximity) - var(--edge-sensitivity)) / (100 - var(--edge-sensitivity)));
-    mix-blend-mode: plus-lighter;
-  }
-
-  .border-glow-card > .edge-light::before {
-    content: "";
-    position: absolute;
-    inset: var(--glow-padding);
-    border-radius: inherit;
-    box-shadow:
-      inset 0 0 0 1px var(--glow-color, hsl(210deg 45% 30% / 100%)),
-      inset 0 0 1px 0 var(--glow-color-60, hsl(210deg 45% 30% / 60%)),
-      inset 0 0 3px 0 var(--glow-color-50, hsl(210deg 45% 30% / 50%)),
-      inset 0 0 6px 0 var(--glow-color-40, hsl(210deg 45% 30% / 40%)),
-      inset 0 0 15px 0 var(--glow-color-30, hsl(210deg 45% 30% / 30%)),
-      inset 0 0 25px 2px var(--glow-color-20, hsl(210deg 45% 30% / 20%)),
-      inset 0 0 50px 2px var(--glow-color-10, hsl(210deg 45% 30% / 10%)),
-      0 0 1px 0 var(--glow-color-60, hsl(210deg 45% 30% / 60%)),
-      0 0 3px 0 var(--glow-color-50, hsl(210deg 45% 30% / 50%)),
-      0 0 6px 0 var(--glow-color-40, hsl(210deg 45% 30% / 40%)),
-      0 0 15px 0 var(--glow-color-30, hsl(210deg 45% 30% / 30%)),
-      0 0 25px 2px var(--glow-color-20, hsl(210deg 45% 30% / 20%)),
-      0 0 50px 2px var(--glow-color-10, hsl(210deg 45% 30% / 10%));
-  }
-
-  .border-glow-inner {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    overflow: auto;
-    z-index: 1;
-  }
-
-  .topic-card.border-glow-card,
-  .draft-card.border-glow-card {
-    --border-radius: 4px;
-    --glow-padding: 24px;
-    --fill-opacity: 0.28;
-    --glow-color: hsl(32deg 70% 50% / 100%);
-    --glow-color-60: hsl(32deg 70% 50% / 60%);
-    --glow-color-50: hsl(32deg 70% 50% / 50%);
-    --glow-color-40: hsl(32deg 70% 50% / 40%);
-    --glow-color-30: hsl(32deg 70% 50% / 30%);
-    --glow-color-20: hsl(32deg 70% 50% / 20%);
-    --glow-color-10: hsl(32deg 70% 50% / 10%);
-    --gradient-one: radial-gradient(at 80% 55%, #223A63 0px, transparent 50%);
-    --gradient-two: radial-gradient(at 69% 34%, #C9791F 0px, transparent 50%);
-    --gradient-three: radial-gradient(at 8% 6%, #F6F1E4 0px, transparent 50%);
-    --gradient-four: radial-gradient(at 41% 38%, #223A63 0px, transparent 50%);
-    --gradient-five: radial-gradient(at 86% 85%, #C9791F 0px, transparent 50%);
-    --gradient-six: radial-gradient(at 82% 18%, #F6F1E4 0px, transparent 50%);
-    --gradient-seven: radial-gradient(at 51% 4%, #C9791F 0px, transparent 50%);
-    --gradient-base: linear-gradient(#223A63 0 100%);
-  }
-  .topic-card.border-glow-card { --card-bg: var(--paper-card); padding: 0; }
-  .topic-card.border-glow-card .border-glow-inner { padding: 20px; gap: 10px; }
-  .draft-card.border-glow-card { --card-bg: var(--indigo); padding: 0; border: 1px solid var(--indigo-deep); }
-  .draft-card.border-glow-card .border-glow-inner { flex-direction: row; align-items: center; padding: 26px 24px; gap: 20px; }
 
   .landing-footer {
     max-width: 880px;
@@ -729,8 +591,6 @@
 </head>
 <body>
 
-<div id="gradientBg"></div>
-
 <header>
   <button class="brand" id="logoBtn" type="button" aria-label="Go to home">
     <div class="brand-text">
@@ -761,54 +621,43 @@
   <div class="carousel-outer">
     <div class="carousel-viewport" id="topicCarousel">
 
-      <div class="topic-card border-glow-card" data-mode="ask" data-topic="tenant">
-        <span class="edge-light"></span>
-        <div class="border-glow-inner">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1V15h4v4.5a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1V10"/></svg>
-          <h3>Tenant Rights</h3>
-          <p>Security deposits, repairs, eviction notice, landlord obligations under the Model Tenancy Act.</p>
-          <div class="example">"My landlord won't return my security deposit"</div>
-          <div class="go">Ask about tenancy →</div>
-        </div>
+      <div class="topic-card" data-mode="ask" data-topic="tenant">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1V15h4v4.5a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1V10"/></svg>
+        <h3>Tenant Rights</h3>
+        <p>Security deposits, repairs, eviction notice, landlord obligations under the Model Tenancy Act.</p>
+        <div class="example">"My landlord won't return my security deposit"</div>
+        <div class="go">Ask about tenancy →</div>
       </div>
 
-      <div class="topic-card border-glow-card" data-mode="ask" data-topic="consumer">
-        <span class="edge-light"></span>
-        <div class="border-glow-inner">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5 12 2l5 1.5v6.2c0 4.4-2.6 7.7-5 8.8-2.4-1.1-5-4.4-5-8.8V3.5Z"/><path d="m9.3 11.3 1.9 1.9 3.5-3.9"/></svg>
-          <h3>Consumer Rights</h3>
-          <p>Defective goods, refunds, unfair trade practices, and how to file a complaint.</p>
-          <div class="example">"A shop refused to refund a defective product"</div>
-          <div class="go">Ask about consumer rights →</div>
-        </div>
+      <div class="topic-card" data-mode="ask" data-topic="consumer">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5 12 2l5 1.5v6.2c0 4.4-2.6 7.7-5 8.8-2.4-1.1-5-4.4-5-8.8V3.5Z"/><path d="m9.3 11.3 1.9 1.9 3.5-3.9"/></svg>
+        <h3>Consumer Rights</h3>
+        <p>Defective goods, refunds, unfair trade practices, and how to file a complaint.</p>
+        <div class="example">"A shop refused to refund a defective product"</div>
+        <div class="go">Ask about consumer rights →</div>
       </div>
 
-      <div class="topic-card border-glow-card" data-mode="ask" data-topic="rti">
-        <span class="edge-light"></span>
-        <div class="border-glow-inner">
-          <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M12 8v.01M11 11.5h1v5h1"/></svg>
-          <h3>RTI Rights</h3>
-          <p>What you can request from a public authority, timelines, and appeal procedure.</p>
-          <div class="example">"How do I file an RTI application?"</div>
-          <div class="go">Ask about RTI →</div>
-        </div>
+      <div class="topic-card" data-mode="ask" data-topic="rti">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M12 8v.01M11 11.5h1v5h1"/></svg>
+        <h3>RTI Rights</h3>
+        <p>What you can request from a public authority, timelines, and appeal procedure.</p>
+        <div class="example">"How do I file an RTI application?"</div>
+        <div class="go">Ask about RTI →</div>
       </div>
 
     </div>
+    <div class="carousel-dots" id="topicDots"></div>
   </div>
 
   <div class="section-wrap">
     <div class="section-label">Draft a document</div>
-    <div class="draft-card border-glow-card" id="draftCardEntry">
-      <span class="edge-light"></span>
-      <div class="border-glow-inner">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
-        <div class="body">
-          <h3 class="serif">RTI Drafting Agent</h3>
-          <p>Describe what information you want from a government office — get a formatted, ready-to-file RTI application with the right department and PIO.</p>
-        </div>
-        <div class="go">Draft an application →</div>
+    <div class="draft-card" id="draftCardEntry">
+      <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
+      <div class="body">
+        <h3 class="serif">RTI Drafting Agent</h3>
+        <p>Describe what information you want from a government office — get a formatted, ready-to-file RTI application with the right department and PIO.</p>
       </div>
+      <div class="go">Draft an application →</div>
     </div>
   </div>
 
@@ -997,6 +846,74 @@
   document.getElementById("draftCardEntry").addEventListener("click", () => {
     enterApp("draft", null);
   });
+
+  // ------------------------------------------------------------------
+  // Topic carousel — native scroll-snap + autoplay, same interaction
+  // model as a typical carousel component (dots, autoplay, pause on
+  // hover, loop) without pulling in React/motion for a static page.
+  // ------------------------------------------------------------------
+  (function initTopicCarousel() {
+    const viewport = document.getElementById("topicCarousel");
+    const dotsWrap = document.getElementById("topicDots");
+    const cards = Array.from(viewport.children);
+    let activeIndex = 0;
+    let autoplayTimer = null;
+    let isHovered = false;
+    const AUTOPLAY_DELAY = 3800;
+
+    cards.forEach((_, i) => {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.setAttribute("aria-label", `Go to card ${i + 1}`);
+      if (i === 0) dot.classList.add("active");
+      dot.addEventListener("click", () => scrollToIndex(i));
+      dotsWrap.appendChild(dot);
+    });
+    const dots = Array.from(dotsWrap.children);
+
+    function scrollToIndex(i) {
+      activeIndex = Math.max(0, Math.min(i, cards.length - 1));
+      cards[activeIndex].scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      dots.forEach((d, idx) => d.classList.toggle("active", idx === activeIndex));
+    }
+
+    function tick() {
+      if (isHovered) return;
+      const next = (activeIndex + 1) % cards.length;
+      scrollToIndex(next);
+    }
+
+    function startAutoplay() {
+      stopAutoplay();
+      autoplayTimer = setInterval(tick, AUTOPLAY_DELAY);
+    }
+    function stopAutoplay() {
+      if (autoplayTimer) clearInterval(autoplayTimer);
+    }
+
+    viewport.addEventListener("mouseenter", () => { isHovered = true; });
+    viewport.addEventListener("mouseleave", () => { isHovered = false; });
+
+    // Keep dots in sync if the user swipes/drags manually.
+    let scrollDebounce = null;
+    viewport.addEventListener("scroll", () => {
+      clearTimeout(scrollDebounce);
+      scrollDebounce = setTimeout(() => {
+        let closest = 0;
+        let closestDist = Infinity;
+        const viewportCenter = viewport.scrollLeft + viewport.clientWidth / 2;
+        cards.forEach((card, i) => {
+          const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+          const dist = Math.abs(cardCenter - viewportCenter);
+          if (dist < closestDist) { closestDist = dist; closest = i; }
+        });
+        activeIndex = closest;
+        dots.forEach((d, idx) => d.classList.toggle("active", idx === activeIndex));
+      }, 100);
+    });
+
+    startAutoplay();
+  })();
 
   // Autosize the textarea as the user types.
   input.addEventListener("input", () => {
@@ -1256,294 +1173,6 @@
 
   checkHealth();
   setInterval(checkHealth, 15000);
-
-  // ------------------------------------------------------------------
-  // BorderGlow — pointer-tracked mesh-gradient border on entry cards.
-  // ------------------------------------------------------------------
-  (function initBorderGlow() {
-    function centerOf(el) {
-      const { width, height } = el.getBoundingClientRect();
-      return [width / 2, height / 2];
-    }
-    function edgeProximity(el, x, y) {
-      const [cx, cy] = centerOf(el);
-      const dx = x - cx, dy = y - cy;
-      let kx = Infinity, ky = Infinity;
-      if (dx !== 0) kx = cx / Math.abs(dx);
-      if (dy !== 0) ky = cy / Math.abs(dy);
-      return Math.min(Math.max(1 / Math.min(kx, ky), 0), 1);
-    }
-    function cursorAngle(el, x, y) {
-      const [cx, cy] = centerOf(el);
-      const dx = x - cx, dy = y - cy;
-      if (dx === 0 && dy === 0) return 0;
-      let degrees = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-      if (degrees < 0) degrees += 360;
-      return degrees;
-    }
-    document.querySelectorAll(".border-glow-card").forEach((card) => {
-      card.addEventListener("pointermove", (e) => {
-        const rect = card.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        card.style.setProperty("--edge-proximity", (edgeProximity(card, x, y) * 100).toFixed(3));
-        card.style.setProperty("--cursor-angle", `${cursorAngle(card, x, y).toFixed(3)}deg`);
-      });
-    });
-  })();
-</script>
-
-<script type="module">
-  // ------------------------------------------------------------------
-  // GradientWaves — full-page WebGL background (ported from the React
-  // Bits component to vanilla JS/ogl for this static page).
-  // ------------------------------------------------------------------
-  import { Renderer, Program, Mesh, Triangle } from "https://cdn.jsdelivr.net/npm/ogl@1.0.11/+esm";
-
-  const hexToRgb = hex => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    if (!result) return [1, 1, 1];
-    return [parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, parseInt(result[3], 16) / 255];
-  };
-  const detailToSteps = detail => {
-    if (detail === "low") return 40.0;
-    if (detail === "high") return 110.0;
-    return 70.0;
-  };
-
-  const vertex = `#version 300 es
-in vec2 position;
-void main() {
-  gl_Position = vec4(position, 0.0, 1.0);
-}
-`;
-
-  const fragment = `#version 300 es
-precision highp float;
-uniform vec2 iResolution;
-uniform float iTime;
-uniform float uSpeed;
-uniform float uAmplitude;
-uniform float uWaveScale;
-uniform float uWaveRatio;
-uniform float uSwell;
-uniform float uTurbulence;
-uniform float uTilt;
-uniform float uZoom;
-uniform float uHeight;
-uniform float uFogDepth;
-uniform float uSteps;
-uniform float uBrightness;
-uniform float uOpacity;
-uniform float uGrain;
-uniform float uGrainIntensity;
-uniform vec2 uMouse;
-uniform float uParallax;
-uniform bool uEnableMouse;
-uniform vec3 uHorizonColor;
-uniform vec3 uWaveColor;
-uniform vec3 uCrestColor;
-out vec4 fragColor;
-
-const float MAX_DIST = 20000.0;
-
-float hash21(vec2 p) {
-  vec3 p3 = fract(vec3(p.xyx) * 0.1031);
-  p3 += dot(p3, p3.yzx + 33.33);
-  return fract((p3.x + p3.y) * p3.z);
-}
-
-float plasma(vec3 r, vec2 freq, vec4 tc) {
-  float mx = r.x + tc.x;
-  mx += uSwell * sin((r.y + mx) / 20.0 + tc.y);
-  float my = r.y - tc.z;
-  my += uTurbulence * cos(r.x / 23.0 + tc.w);
-  return r.z - (sin(mx * freq.x) * uAmplitude + sin(my * freq.y) * uAmplitude + uHeight);
-}
-
-float raymarch(vec3 pos, vec3 dir, vec2 freq, vec4 tc) {
-  float dist = 0.0;
-  for (int i = 0; i < 128; i++) {
-    if (float(i) >= uSteps) break;
-    float dscene = plasma(pos + dist * dir, freq, tc);
-    if (abs(dscene) < 0.1) break;
-    dist += 0.9 * dscene;
-    if (!(abs(dist) < MAX_DIST)) return MAX_DIST;
-  }
-  return dist;
-}
-
-void main() {
-  float T = iTime * uSpeed;
-  vec2 freq = vec2(uWaveScale / 7.0, (uWaveScale * uWaveRatio) / 3.0);
-  vec4 tc = vec4(T / 0.130, T / 0.810, T / 0.200, T / 0.710);
-  float c, s;
-  float vfov = (3.14159 / 2.3) / max(uZoom, 0.05);
-  vec3 cam = vec3(0.0, 0.0, 30.0);
-  vec2 uv = (gl_FragCoord.xy / iResolution.xy) - 0.5;
-  uv.x *= iResolution.x / iResolution.y;
-  uv.y *= -1.0;
-
-  vec3 dir = vec3(0.0, 0.0, -1.0);
-  float ulen = length(uv);
-  float xrot = vfov * ulen;
-  c = cos(xrot); s = sin(xrot);
-  dir = mat3(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c) * dir;
-  vec2 nuv = ulen > 1e-5 ? uv / ulen : vec2(1.0, 0.0);
-  c = nuv.x; s = nuv.y;
-  dir = mat3(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0) * dir;
-  c = cos(uTilt); s = sin(uTilt);
-  dir = mat3(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c) * dir;
-
-  if (uEnableMouse) {
-    float yaw = (uMouse.x - 0.5) * uParallax * 0.4;
-    float pitch = (uMouse.y - 0.5) * uParallax * 0.4;
-    c = cos(yaw); s = sin(yaw);
-    dir = mat3(c, 0.0, s, 0.0, 1.0, 0.0, -s, 0.0, c) * dir;
-    c = cos(pitch); s = sin(pitch);
-    dir = mat3(1.0, 0.0, 0.0, 0.0, c, -s, 0.0, s, c) * dir;
-  }
-
-  float dist = raymarch(cam, dir, freq, tc);
-  vec3 pos = cam + dist * dir;
-
-  float t = clamp(uFogDepth / max(dist, 0.001), 0.0, 1.0);
-  vec3 body = mix(uWaveColor, uCrestColor, clamp(pos.z * 0.08 + 0.5, 0.0, 1.0));
-  vec3 col = mix(uHorizonColor, body, t);
-  col *= uBrightness;
-  col = clamp(col, 0.0, 1.0);
-
-  float alpha = clamp(t, 0.0, 1.0) * uOpacity;
-  if (uGrain > 0.5) {
-    float g = hash21(gl_FragCoord.xy + mod(iTime, 64.0) * 11.0);
-    alpha += (g - 0.5) * uGrainIntensity;
-  }
-  alpha = clamp(alpha, 0.0, 1.0);
-  fragColor = vec4(col * alpha, alpha);
-}
-`;
-
-  function initGradientWaves(container, opts) {
-    const o = Object.assign({
-      horizonColor: "#F6F1E4",
-      waveColor: "#223A63",
-      crestColor: "#C9791F",
-      speed: 0.28,
-      amplitude: 2.2,
-      waveScale: 0.55,
-      waveRatio: 0.9,
-      swell: 30,
-      turbulence: 16,
-      tilt: 1.11,
-      zoom: 1.0,
-      height: 5.5,
-      fogDepth: 15,
-      detail: "medium",
-      brightness: 1.0,
-      opacity: 0.85,
-      mouseInteraction: true,
-      parallaxStrength: 0.4,
-      grain: true,
-      grainIntensity: 0.04
-    }, opts || {});
-
-    if (!window.WebGL2RenderingContext) return; // graceful no-op on unsupported browsers
-
-    const renderer = new Renderer({
-      webgl: 2,
-      alpha: true,
-      premultipliedAlpha: true,
-      antialias: false,
-      dpr: Math.min(window.devicePixelRatio || 1, 2)
-    });
-    const gl = renderer.gl;
-    gl.clearColor(0, 0, 0, 0);
-    const canvas = gl.canvas;
-    canvas.style.width = "100%";
-    canvas.style.height = "100%";
-    canvas.style.display = "block";
-    container.appendChild(canvas);
-
-    const geometry = new Triangle(gl);
-    const program = new Program(gl, {
-      vertex,
-      fragment,
-      uniforms: {
-        iTime: { value: 0 },
-        iResolution: { value: new Float32Array([1, 1]) },
-        uSpeed: { value: o.speed },
-        uAmplitude: { value: o.amplitude },
-        uWaveScale: { value: o.waveScale },
-        uWaveRatio: { value: o.waveRatio },
-        uSwell: { value: o.swell },
-        uTurbulence: { value: o.turbulence },
-        uTilt: { value: o.tilt },
-        uZoom: { value: o.zoom },
-        uHeight: { value: o.height },
-        uFogDepth: { value: o.fogDepth },
-        uSteps: { value: detailToSteps(o.detail) },
-        uBrightness: { value: o.brightness },
-        uOpacity: { value: o.opacity },
-        uGrain: { value: o.grain ? 1.0 : 0.0 },
-        uGrainIntensity: { value: o.grainIntensity },
-        uMouse: { value: new Float32Array([0.5, 0.5]) },
-        uParallax: { value: o.parallaxStrength },
-        uEnableMouse: { value: o.mouseInteraction },
-        uHorizonColor: { value: new Float32Array(hexToRgb(o.horizonColor)) },
-        uWaveColor: { value: new Float32Array(hexToRgb(o.waveColor)) },
-        uCrestColor: { value: new Float32Array(hexToRgb(o.crestColor)) }
-      }
-    });
-
-    const mesh = new Mesh(gl, { geometry, program });
-
-    const setSize = () => {
-      const rect = container.getBoundingClientRect();
-      const w = Math.max(1, Math.floor(rect.width));
-      const h = Math.max(1, Math.floor(rect.height));
-      renderer.setSize(w, h);
-      const res = program.uniforms.iResolution.value;
-      res[0] = gl.drawingBufferWidth;
-      res[1] = gl.drawingBufferHeight;
-    };
-
-    const ro = new ResizeObserver(setSize);
-    ro.observe(container);
-    setSize();
-
-    const currentMouse = [0.5, 0.5];
-    const targetMouse = [0.5, 0.5];
-
-    window.addEventListener("pointermove", (e) => {
-      targetMouse[0] = e.clientX / window.innerWidth;
-      targetMouse[1] = 1.0 - e.clientY / window.innerHeight;
-    });
-
-    let isPageVisible = !document.hidden;
-    const t0 = performance.now();
-
-    function loop(t) {
-      program.uniforms.iTime.value = (t - t0) * 0.001;
-      const tx = o.mouseInteraction ? targetMouse[0] : 0.5;
-      const ty = o.mouseInteraction ? targetMouse[1] : 0.5;
-      currentMouse[0] += 0.05 * (tx - currentMouse[0]);
-      currentMouse[1] += 0.05 * (ty - currentMouse[1]);
-      program.uniforms.uMouse.value[0] = currentMouse[0];
-      program.uniforms.uMouse.value[1] = currentMouse[1];
-      renderer.render({ scene: mesh });
-      if (isPageVisible) requestAnimationFrame(loop);
-    }
-
-    document.addEventListener("visibilitychange", () => {
-      isPageVisible = !document.hidden;
-      if (isPageVisible) requestAnimationFrame(loop);
-    });
-
-    requestAnimationFrame(loop);
-  }
-
-  const bg = document.getElementById("gradientBg");
-  if (bg) initGradientWaves(bg);
 </script>
 
 </body>
