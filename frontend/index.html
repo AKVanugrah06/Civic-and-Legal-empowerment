@@ -169,13 +169,52 @@
     background: var(--line);
   }
 
-  .card-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+  .carousel-outer {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .carousel-viewport {
+    display: flex;
     gap: 14px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .carousel-viewport::-webkit-scrollbar { display: none; }
+
+  .carousel-viewport .topic-card {
+    scroll-snap-align: center;
+    flex: 0 0 calc(33.333% - 9.4px);
+    min-width: 240px;
   }
   @media (max-width: 720px) {
-    .card-grid { grid-template-columns: 1fr; }
+    .carousel-viewport .topic-card { flex-basis: 84%; min-width: 0; }
+  }
+
+  .carousel-dots {
+    display: flex;
+    justify-content: center;
+    gap: 7px;
+    margin-top: 14px;
+  }
+  .carousel-dots button {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    border: none;
+    padding: 0;
+    background: var(--line);
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+  }
+  .carousel-dots button.active {
+    background: var(--marigold);
+    transform: scale(1.3);
   }
 
   .topic-card {
@@ -577,7 +616,10 @@
 
   <div class="section-wrap">
     <div class="section-label">Ask about your rights</div>
-    <div class="card-grid">
+  </div>
+
+  <div class="carousel-outer">
+    <div class="carousel-viewport" id="topicCarousel">
 
       <div class="topic-card" data-mode="ask" data-topic="tenant">
         <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5a1 1 0 0 0 1 1H9a1 1 0 0 0 1-1V15h4v4.5a1 1 0 0 0 1 1h2.5a1 1 0 0 0 1-1V10"/></svg>
@@ -588,7 +630,7 @@
       </div>
 
       <div class="topic-card" data-mode="ask" data-topic="consumer">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8h12l-1 12.5a1.5 1.5 0 0 1-1.5 1.5h-7a1.5 1.5 0 0 1-1.5-1.5L6 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3.5 12 2l5 1.5v6.2c0 4.4-2.6 7.7-5 8.8-2.4-1.1-5-4.4-5-8.8V3.5Z"/><path d="m9.3 11.3 1.9 1.9 3.5-3.9"/></svg>
         <h3>Consumer Rights</h3>
         <p>Defective goods, refunds, unfair trade practices, and how to file a complaint.</p>
         <div class="example">"A shop refused to refund a defective product"</div>
@@ -604,7 +646,10 @@
       </div>
 
     </div>
+    <div class="carousel-dots" id="topicDots"></div>
+  </div>
 
+  <div class="section-wrap">
     <div class="section-label">Draft a document</div>
     <div class="draft-card" id="draftCardEntry">
       <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h4"/></svg>
@@ -801,6 +846,74 @@
   document.getElementById("draftCardEntry").addEventListener("click", () => {
     enterApp("draft", null);
   });
+
+  // ------------------------------------------------------------------
+  // Topic carousel — native scroll-snap + autoplay, same interaction
+  // model as a typical carousel component (dots, autoplay, pause on
+  // hover, loop) without pulling in React/motion for a static page.
+  // ------------------------------------------------------------------
+  (function initTopicCarousel() {
+    const viewport = document.getElementById("topicCarousel");
+    const dotsWrap = document.getElementById("topicDots");
+    const cards = Array.from(viewport.children);
+    let activeIndex = 0;
+    let autoplayTimer = null;
+    let isHovered = false;
+    const AUTOPLAY_DELAY = 3800;
+
+    cards.forEach((_, i) => {
+      const dot = document.createElement("button");
+      dot.type = "button";
+      dot.setAttribute("aria-label", `Go to card ${i + 1}`);
+      if (i === 0) dot.classList.add("active");
+      dot.addEventListener("click", () => scrollToIndex(i));
+      dotsWrap.appendChild(dot);
+    });
+    const dots = Array.from(dotsWrap.children);
+
+    function scrollToIndex(i) {
+      activeIndex = Math.max(0, Math.min(i, cards.length - 1));
+      cards[activeIndex].scrollIntoView({ behavior: "smooth", inline: "center", block: "nearest" });
+      dots.forEach((d, idx) => d.classList.toggle("active", idx === activeIndex));
+    }
+
+    function tick() {
+      if (isHovered) return;
+      const next = (activeIndex + 1) % cards.length;
+      scrollToIndex(next);
+    }
+
+    function startAutoplay() {
+      stopAutoplay();
+      autoplayTimer = setInterval(tick, AUTOPLAY_DELAY);
+    }
+    function stopAutoplay() {
+      if (autoplayTimer) clearInterval(autoplayTimer);
+    }
+
+    viewport.addEventListener("mouseenter", () => { isHovered = true; });
+    viewport.addEventListener("mouseleave", () => { isHovered = false; });
+
+    // Keep dots in sync if the user swipes/drags manually.
+    let scrollDebounce = null;
+    viewport.addEventListener("scroll", () => {
+      clearTimeout(scrollDebounce);
+      scrollDebounce = setTimeout(() => {
+        let closest = 0;
+        let closestDist = Infinity;
+        const viewportCenter = viewport.scrollLeft + viewport.clientWidth / 2;
+        cards.forEach((card, i) => {
+          const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+          const dist = Math.abs(cardCenter - viewportCenter);
+          if (dist < closestDist) { closestDist = dist; closest = i; }
+        });
+        activeIndex = closest;
+        dots.forEach((d, idx) => d.classList.toggle("active", idx === activeIndex));
+      }, 100);
+    });
+
+    startAutoplay();
+  })();
 
   // Autosize the textarea as the user types.
   input.addEventListener("input", () => {
