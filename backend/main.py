@@ -194,7 +194,7 @@ _collection = _client.get_collection(name=COLLECTION_NAME, embedding_function=_e
 # build_department_index.py). Kept separate from _collection (legal_docs)
 # so department queries don't dilute Act-section retrieval, and vice versa.
 DEPARTMENT_COLLECTION_NAME = "department_mapping"
-DEPARTMENT_DISTANCE_THRESHOLD = 0.75  # slightly looser than legal_docs since
+DEPARTMENT_DISTANCE_THRESHOLD = 1.4   # re-tuned for ChromaDB default ONNX embedding function (see legal_docs threshold change above)
                                        # department topics are short/varied phrasing
 
 # ---------------------------------------------------------------------------
