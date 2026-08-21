@@ -240,6 +240,71 @@
     max-width: 720px;
     margin: 0 auto;
   }
+
+  .mode-toggle {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px 16px 0;
+    background: var(--bg);
+  }
+  .mode-btn {
+    background: var(--panel);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 7px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .mode-btn.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .rti-card {
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bot-bubble);
+    padding: 16px 18px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .rti-card .rti-row {
+    margin-bottom: 10px;
+  }
+  .rti-card .rti-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .rti-card .rti-subject {
+    font-weight: 600;
+  }
+  .rti-card .rti-body {
+    white-space: pre-wrap;
+  }
+  .rti-badge {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 8px;
+    margin-left: 6px;
+  }
+  .rti-badge.matched {
+    background: var(--accent-light);
+    color: var(--accent);
+  }
+  .rti-badge.unmatched {
+    background: #fbe9e7;
+    color: var(--error);
+  }
 </style>
 </head>
 <body>
@@ -270,6 +335,12 @@
 </main>
 
 <div class="disclaimer-strip">Rights Navigator gives general information only — not legal advice.</div>
+
+<div class="mode-toggle">
+  <button type="button" class="mode-btn active" id="modeAsk">Ask a Question</button>
+  <button type="button" class="mode-btn" id="modeDraft">Draft an RTI Application</button>
+</div>
+
 <footer>
   <form id="askForm">
     <textarea id="questionInput" rows="1" placeholder="Ask a question about tenant, consumer, or RTI rights…"></textarea>
@@ -279,6 +350,7 @@
 
 <script>
   const API_URL = "https://civic-and-legal-empowerment.onrender.com/ask";
+  const DRAFT_URL = "https://civic-and-legal-empowerment.onrender.com/draft-rti";
   const HEALTH_URL = "https://civic-and-legal-empowerment.onrender.com/";
 
   const thread = document.getElementById("thread");
@@ -288,6 +360,25 @@
   const sendBtn = document.getElementById("sendBtn");
   const statusDot = document.getElementById("statusDot");
   const statusText = document.getElementById("statusText");
+  const modeAskBtn = document.getElementById("modeAsk");
+  const modeDraftBtn = document.getElementById("modeDraft");
+
+  // "ask" = Rights Navigator Q&A, "draft" = RTI Drafting Agent
+  let currentMode = "ask";
+
+  function setMode(mode) {
+    currentMode = mode;
+    const isAsk = mode === "ask";
+    modeAskBtn.classList.toggle("active", isAsk);
+    modeDraftBtn.classList.toggle("active", !isAsk);
+    sendBtn.textContent = isAsk ? "Ask" : "Draft";
+    input.placeholder = isAsk
+      ? "Ask a question about tenant, consumer, or RTI rights…"
+      : "Describe what information you want to request, e.g. \"I want to know the status of the road repair project on MG Road in my ward\"";
+  }
+
+  modeAskBtn.addEventListener("click", () => setMode("ask"));
+  modeDraftBtn.addEventListener("click", () => setMode("draft"));
 
   // Autosize the textarea as the user types.
   input.addEventListener("input", () => {
@@ -367,6 +458,95 @@
     scrollToBottom();
   }
 
+  function addRTICard(draft) {
+    const msg = document.createElement("div");
+    msg.className = "msg bot";
+    msg.style.maxWidth = "100%";
+
+    const badgeClass = draft.department_confidence === "matched" ? "matched" : "unmatched";
+    const badgeText = draft.department_confidence === "matched" ? "Department matched" : "Department unmatched — verify manually";
+
+    const card = document.createElement("div");
+    card.className = "rti-card";
+    card.innerHTML = `
+      <div class="rti-row">
+        <div class="rti-label">To</div>
+        <div>${draft.pio_designation}, ${draft.department_name}
+          <span class="rti-badge ${badgeClass}">${badgeText}</span>
+        </div>
+      </div>
+      <div class="rti-row">
+        <div class="rti-label">Subject</div>
+        <div class="rti-subject">${draft.subject_line}</div>
+      </div>
+      <div class="rti-row">
+        <div class="rti-label">Information Requested</div>
+        <div class="rti-body">${draft.information_requested}</div>
+      </div>
+      <div class="rti-row">
+        <div class="rti-label">Applicant Name</div>
+        <div>${draft.applicant_name}</div>
+      </div>
+      <div class="rti-row">
+        <div class="rti-label">Applicant Address</div>
+        <div>${draft.applicant_address}</div>
+      </div>
+      <div class="rti-row">
+        <div class="rti-label">Date</div>
+        <div>${draft.date}</div>
+      </div>
+      <div class="rti-row" style="margin-bottom:0;">
+        <div class="rti-label">Declaration</div>
+        <div class="rti-body">${draft.declaration_note}</div>
+      </div>
+    `;
+    msg.appendChild(card);
+    thread.appendChild(msg);
+    scrollToBottom();
+  }
+
+  async function draftRTIApplication(requestText) {
+    addUserMessage(requestText);
+    input.value = "";
+    input.style.height = "auto";
+    sendBtn.disabled = true;
+
+    const typingEl = addTypingIndicator();
+
+    try {
+      const res = await fetch(DRAFT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ request_text: requestText }),
+      });
+
+      typingEl.remove();
+
+      if (!res.ok) {
+        let detail = `Request failed (${res.status}).`;
+        try {
+          const errBody = await res.json();
+          if (errBody.detail) detail = errBody.detail;
+        } catch (_) { /* ignore parse failure */ }
+        addBotMessage(detail, [], true);
+        return;
+      }
+
+      const draft = await res.json();
+      addRTICard(draft);
+    } catch (err) {
+      typingEl.remove();
+      addBotMessage(
+        "Couldn't reach the RTI Drafting Agent. Please try again in a moment.",
+        [],
+        true
+      );
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
   async function checkHealth() {
     try {
       const res = await fetch(HEALTH_URL, { method: "GET" });
@@ -429,7 +609,11 @@
     e.preventDefault();
     const question = input.value.trim();
     if (!question) return;
-    askQuestion(question);
+    if (currentMode === "draft") {
+      draftRTIApplication(question);
+    } else {
+      askQuestion(question);
+    }
   });
 
   checkHealth();
