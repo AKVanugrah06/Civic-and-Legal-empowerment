@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rights Navigator</title>
+<style>
+  :root {
+    --bg: #f7f7f5;
+    --panel: #ffffff;
+    --border: #e2e2df;
+    --text: #1f1f1d;
+    --muted: #6b6b66;
+    --accent: #1e5b4f;
+    --accent-light: #e8f0ee;
+    --user-bubble: #1e5b4f;
+    --user-text: #ffffff;
+    --bot-bubble: #ffffff;
+    --error: #b3261e;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--panel);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  header h1 {
+    font-size: 17px;
+    margin: 0;
+    font-weight: 600;
+  }
+
+  header .subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 2px;
+  }
+
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #9a9a94;
+    display: inline-block;
+    margin-right: 6px;
+  }
+  .status-dot.ok { background: #2f9e5c; }
+  .status-dot.down { background: var(--error); }
+
+  .status {
+    font-size: 12px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+  }
+
+  main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 24px 16px 12px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .thread {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .empty-state {
+    margin: auto;
+    text-align: center;
+    color: var(--muted);
+    max-width: 420px;
+    padding: 40px 20px;
+  }
+  .empty-state h2 {
+    color: var(--text);
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+  .empty-state p {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .example-q {
+    display: inline-block;
+    margin: 4px 6px 0;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    font-size: 12.5px;
+    color: var(--accent);
+    cursor: pointer;
+    background: var(--panel);
+  }
+  .example-q:hover { background: var(--accent-light); }
+
+  .msg {
+    display: flex;
+    flex-direction: column;
+    max-width: 82%;
+  }
+  .msg.user { align-self: flex-end; align-items: flex-end; }
+  .msg.bot { align-self: flex-start; align-items: flex-start; }
+
+  .bubble {
+    padding: 11px 15px;
+    border-radius: 14px;
+    font-size: 14.5px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+  }
+  .msg.user .bubble {
+    background: var(--user-bubble);
+    color: var(--user-text);
+    border-bottom-right-radius: 4px;
+  }
+  .msg.bot .bubble {
+    background: var(--bot-bubble);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+  }
+  .msg.bot .bubble.error {
+    border-color: var(--error);
+    color: var(--error);
+  }
+
+  .sources {
+    margin-top: 6px;
+    font-size: 11.5px;
+    color: var(--muted);
+    max-width: 100%;
+  }
+  .sources .label {
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .source-tag {
+    display: inline-block;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 8px;
+    padding: 2px 8px;
+    margin: 2px 4px 0 0;
+  }
+
+  .typing {
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px 0;
+  }
+  .typing span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: bounce 1.2s infinite ease-in-out;
+  }
+  .typing span:nth-child(2) { animation-delay: 0.15s; }
+  .typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-4px); opacity: 1; }
+  }
+
+  footer {
+    padding: 14px 16px 20px;
+    display: flex;
+    justify-content: center;
+    background: var(--bg);
+  }
+
+  form {
+    width: 100%;
+    max-width: 720px;
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+  }
+
+  textarea {
+    flex: 1;
+    resize: none;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 11px 14px;
+    font-size: 14.5px;
+    font-family: inherit;
+    line-height: 1.4;
+    max-height: 120px;
+    background: var(--panel);
+    color: var(--text);
+  }
+  textarea:focus {
+    outline: none;
+    border-color: var(--accent);
+  }
+
+  button {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    padding: 11px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  button:disabled {
+    background: #b8c9c5;
+    cursor: not-allowed;
+  }
+
+  .disclaimer-strip {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    padding-bottom: 4px;
+    max-width: 720px;
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Rights Navigator</h1>
+    <div class="subtitle">Tenant, consumer &amp; RTI rights under Indian law</div>
+  </div>
+  <div class="status" id="status">
+    <span class="status-dot" id="statusDot"></span>
+    <span id="statusText">Checking API…</span>
+  </div>
+</header>
+
+<main>
+  <div class="thread" id="thread">
+    <div class="empty-state" id="emptyState">
+      <h2>Ask about your rights</h2>
+      <p>Answers are grounded in the Model Tenancy Act, Consumer Protection Act, and RTI Act — with citations. This is not legal advice.</p>
+      <div>
+        <span class="example-q">My landlord won't return my security deposit</span>
+        <span class="example-q">A shop refused to refund a defective product</span>
+        <span class="example-q">How do I file an RTI application?</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="disclaimer-strip">Rights Navigator gives general information only — not legal advice.</div>
+<footer>
+  <form id="askForm">
+    <textarea id="questionInput" rows="1" placeholder="Ask a question about tenant, consumer, or RTI rights…"></textarea>
+    <button type="submit" id="sendBtn">Ask</button>
+  </form>
+</footer>
+
+<script>
+  const API_URL = "https://civic-and-legal-empowerment.onrender.com/ask";
+  const HEALTH_URL = "https://civic-and-legal-empowerment.onrender.com/";
+
+  const thread = document.getElementById("thread");
+  const emptyState = document.getElementById("emptyState");
+  const form = document.getElementById("askForm");
+  const input = document.getElementById("questionInput");
+  const sendBtn = document.getElementById("sendBtn");
+  const statusDot = document.getElementById("statusDot");
+  const statusText = document.getElementById("statusText");
+
+  // Autosize the textarea as the user types.
+  input.addEventListener("input", () => {
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 120) + "px";
+  });
+
+  // Enter submits, Shift+Enter makes a newline.
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  document.querySelectorAll(".example-q").forEach((el) => {
+    el.addEventListener("click", () => {
+      input.value = el.textContent;
+      input.dispatchEvent(new Event("input"));
+      form.requestSubmit();
+    });
+  });
+
+  function scrollToBottom() {
+    window.requestAnimationFrame(() => {
+      thread.scrollIntoView({ block: "end" });
+      window.scrollTo(0, document.body.scrollHeight);
+    });
+  }
+
+  function addUserMessage(text) {
+    if (emptyState) emptyState.remove();
+    const msg = document.createElement("div");
+    msg.className = "msg user";
+    msg.innerHTML = `<div class="bubble"></div>`;
+    msg.querySelector(".bubble").textContent = text;
+    thread.appendChild(msg);
+    scrollToBottom();
+  }
+
+  function addTypingIndicator() {
+    const msg = document.createElement("div");
+    msg.className = "msg bot";
+    msg.id = "typingIndicator";
+    msg.innerHTML = `
+      <div class="bubble">
+        <div class="typing"><span></span><span></span><span></span></div>
+      </div>`;
+    thread.appendChild(msg);
+    scrollToBottom();
+    return msg;
+  }
+
+  function addBotMessage(answer, sources, isError) {
+    const msg = document.createElement("div");
+    msg.className = "msg bot";
+
+    const bubble = document.createElement("div");
+    bubble.className = "bubble" + (isError ? " error" : "");
+    bubble.textContent = answer;
+    msg.appendChild(bubble);
+
+    if (sources && sources.length > 0) {
+      const src = document.createElement("div");
+      src.className = "sources";
+      src.innerHTML = `<span class="label">Sources:</span>`;
+      sources.forEach((s) => {
+        const tag = document.createElement("span");
+        tag.className = "source-tag";
+        tag.textContent = s;
+        src.appendChild(tag);
+      });
+      msg.appendChild(src);
+    }
+
+    thread.appendChild(msg);
+    scrollToBottom();
+  }
+
+  async function checkHealth() {
+    try {
+      const res = await fetch(HEALTH_URL, { method: "GET" });
+      if (res.ok) {
+        statusDot.className = "status-dot ok";
+        statusText.textContent = "API connected";
+      } else {
+        throw new Error("bad status");
+      }
+    } catch (err) {
+      statusDot.className = "status-dot down";
+      statusText.textContent = "API unreachable";
+    }
+  }
+
+  async function askQuestion(question) {
+    addUserMessage(question);
+    input.value = "";
+    input.style.height = "auto";
+    sendBtn.disabled = true;
+
+    const typingEl = addTypingIndicator();
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question }),
+      });
+
+      typingEl.remove();
+
+      if (!res.ok) {
+        // Backend returns {"detail": "..."} on HTTPException (e.g. 503/502)
+        let detail = `Request failed (${res.status}).`;
+        try {
+          const errBody = await res.json();
+          if (errBody.detail) detail = errBody.detail;
+        } catch (_) { /* ignore parse failure */ }
+        addBotMessage(detail, [], true);
+        return;
+      }
+
+      const data = await res.json();
+      addBotMessage(data.answer || "No answer returned.", data.sources || [], false);
+    } catch (err) {
+      typingEl.remove();
+      addBotMessage(
+        "Couldn't reach the Rights Navigator API. Is the backend running on localhost:8000?",
+        [],
+        true
+      );
+    } finally {
+      sendBtn.disabled = false;
+      input.focus();
+    }
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const question = input.value.trim();
+    if (!question) return;
+    askQuestion(question);
+  });
+
+  checkHealth();
+  setInterval(checkHealth, 15000);
+</script>
+
+</body>
+</html>
