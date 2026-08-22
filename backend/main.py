@@ -76,7 +76,7 @@ DISCLAIMER = (
 # Step 9: the grounded system prompt
 # ---------------------------------------------------------------------------
 
-SYSTEM_PROMPT = """You are Rights Navigator, an assistant that helps people understand \
+SYSTEM_PROMPT = """You are Law Saarthi, an assistant that helps people understand \
 their tenant, consumer, and right-to-information rights under Indian law.
 
 STRICT RULES — follow all of these exactly:
@@ -139,7 +139,7 @@ DECLARATION_NOTE = (
 # - Output must be strict JSON only (no markdown, no prose wrapper) so it
 #   maps cleanly onto DraftRTIResponse for the frontend.
 
-RTI_SYSTEM_PROMPT = """You are the RTI Drafting Agent, part of Rights Navigator. \
+RTI_SYSTEM_PROMPT = """You are the RTI Drafting Agent, part of Law Saarthi. \
 You turn a person's plain-language description of a problem into the \
 components of a formal RTI (Right to Information) application under the \
 RTI Act, 2005.
@@ -455,7 +455,7 @@ def check_input_length(text: str):
 # Step 10: the /ask endpoint
 # ---------------------------------------------------------------------------
 
-app = FastAPI(title="Rights Navigator API")
+app = FastAPI(title="Law Saarthi API")
 
 app.add_middleware(
     CORSMiddleware,
@@ -636,4 +636,4 @@ def draft_rti(request: DraftRTIRequest, http_request: Request):
 
 @app.get("/")
 def health_check():
-    return {"status": "ok", "service": "Rights Navigator API"}
+    return {"status": "ok", "service": "Law Saarthi API"}
