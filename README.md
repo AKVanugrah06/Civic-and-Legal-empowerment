@@ -1,4 +1,4 @@
-# Rights Navigator
+# Law Saarthi
 
 **OOSC Hackathon — IIIT Allahabad | Problem Statement 3: AI for Civic and Legal Empowerment**
 
