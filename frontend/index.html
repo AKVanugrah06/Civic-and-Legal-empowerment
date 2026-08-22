@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rights Navigator</title>
+<title>Law Saarthi</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -734,7 +734,7 @@
 <header>
   <button class="brand" id="logoBtn" type="button" aria-label="Go to home">
     <div class="brand-text">
-      <h1>Rights Navigator</h1>
+      <h1>Law Saarthi</h1>
       <div class="tagline">Civic &amp; Legal Empowerment</div>
     </div>
   </button>
@@ -812,7 +812,7 @@
     </div>
   </div>
 
-  <div class="landing-footer">Rights Navigator gives general information only — not legal advice.</div>
+  <div class="landing-footer">Law Saarthi gives general information only — not legal advice.</div>
 </div>
 
 <!-- ================================================================ -->
@@ -847,7 +847,7 @@
       <textarea id="questionInput" rows="1" placeholder="Ask a question about tenant, consumer, or RTI rights…"></textarea>
       <button type="submit" class="send" id="sendBtn">Ask</button>
     </form>
-    <div class="disclaimer-strip">Rights Navigator gives general information only — not legal advice.</div>
+    <div class="disclaimer-strip">Law Saarthi gives general information only — not legal advice.</div>
   </footer>
 </div>
 
@@ -1012,7 +1012,7 @@
     }
   });
 
-  // "ask" = Rights Navigator Q&A, "draft" = RTI Drafting Agent
+  // "ask" = Law Saarthi Q&A, "draft" = RTI Drafting Agent
   let currentMode = "ask";
 
   function setMode(mode) {
@@ -1233,7 +1233,7 @@
     } catch (err) {
       typingEl.remove();
       addBotMessage(
-        "Couldn't reach the Rights Navigator API. Please try again in a moment.",
+        "Couldn't reach the Law Saarthi API. Please try again in a moment.",
         [],
         true
       );
