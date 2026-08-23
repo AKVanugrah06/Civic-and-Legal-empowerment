@@ -1,6 +1,6 @@
 # Law Saarthi
 
-**OOSC Hackathon — IIIT Allahabad | Problem Statement 3: AI for Civic and Legal Empowerment**
+**OOSC Hackathon: IIIT Allahabad | Problem Statement 3: AI for Civic and Legal Empowerment**
 
 Live demo: https://civic-and-legal-empowerment.vercel.app/
 
@@ -8,16 +8,16 @@ Live demo: https://civic-and-legal-empowerment.vercel.app/
 
 ## What it does
 
-Rights Navigator is a grounded RAG chatbot that answers plain-language questions about tenant, consumer, and right-to-information rights under Indian law — every answer is cited to the actual section of the source Act it came from. It also includes an **RTI Drafting Agent** that turns a plain-language request into a formatted, ready-to-file RTI application.
+Rights Navigator is a grounded RAG chatbot that answers plain-language questions about tenant, consumer, and right-to-information rights under Indian law. Every answer in the chat is cited to the actual section of the source Act it came from. It also includes an **RTI Drafting Agent** that turns a plain-language request into a formatted, ready-to-file RTI application.
 
-**Core feature — Rights Navigator (Q&A):**
+**Core feature: Rights Navigator (Q&A):**
 
 - Answers grounded strictly in retrieved legal text (no hallucinated law)
 - Cites the Act and Section number for every claim
-- Declines gracefully — "I don't have information on this" — when a question falls outside its knowledge base, instead of guessing
+- Declines gracefully, "I don't have information on this", when a question falls outside its knowledge base, instead of guessing
 - Every response carries a "not legal advice" disclaimer
 
-**Stretch feature — RTI Drafting Agent:**
+**Stretch feature: RTI Drafting Agent:**
 
 - Takes a plain-language description of what information the user wants
 - Produces a formatted RTI application draft
@@ -29,11 +29,11 @@ Most people don't know their rights as tenants or consumers, or how to exercise 
 ## Architecture
 
 ```
-┌─────────────┐      ┌──────────────┐      ┌─────────────────┐      ┌────────────┐
-│  Frontend    │ ───▶ │  FastAPI      │ ───▶ │  ChromaDB         │      │  Gemini API │
-│  (Vercel)    │      │  /ask         │      │  (vector store)   │      │  (Flash)    │
-│              │ ◀─── │  /draft-rti   │ ◀─── │  138 chunks        │ ◀───│             │
-└─────────────┘      └──────────────┘      └─────────────────┘      └────────────┘
+┌─────────────┐      ┌──────────────┐       ┌─────────────────┐       ┌────────────┐
+│  Frontend   │ ───▶ │  FastAPI     │ ───▶ │  ChromaDB       │       │ Gemini API │
+│  (Vercel)   │      │  /ask        │       │  (vector store) │       │  (Flash)   │
+│             │ ◀─── │  /draft-rti  │ ◀─── │  138 chunks     │ ◀─── │            │
+└─────────────┘      └──────────────┘       └─────────────────┘       └────────────┘
 ```
 
 1. Source Acts (Model Tenancy Act, Consumer Protection Act, RTI Act) are cleaned and split into per-section chunks (`chunk_docs.py`)
@@ -84,10 +84,10 @@ npm run dev
 
 ## Known limitations
 
-- Knowledge base currently covers three Acts only (Model Tenancy Act, Consumer Protection Act, RTI Act) — questions outside these areas (e.g. labor law) are correctly declined rather than answered
-- The Model Tenancy Act is a model/template Act — actual tenancy rules vary by state, since most states have their own Rent Control Acts; this is flagged in the disclaimer but worth being explicit about
+- Knowledge base currently covers three Acts only (Model Tenancy Act, Consumer Protection Act, RTI Act),  questions outside these areas (e.g. labor law) are correctly declined rather than answered
+- The Model Tenancy Act is a model/template Act, actual tenancy rules vary by state, since most states have their own Rent Control Acts; this is flagged in the disclaimer but worth being explicit about
 - Uses Gemini's free-tier Flash model, which may have lower reasoning depth than larger models on edge-case legal nuance
-- RTI Drafting Agent produces a draft for review, not a legally verified filing — users should confirm department/PIO details before submission
+- RTI Drafting Agent produces a draft for review, not a legally verified filing, users should confirm department/PIO details before submission
 
 ## Evaluation criteria mapping
 
