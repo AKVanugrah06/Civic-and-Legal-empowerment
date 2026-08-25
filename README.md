@@ -97,4 +97,4 @@ npm run dev
 - **Scalability** — the same chunking/embedding/retrieval pipeline generalizes to any additional Act or legal domain by dropping a new cleaned source document into `data/` — no architecture changes needed. RTI Drafting Agent reuses the identical retrieval pipeline rather than a separate system.
 - **Code quality** — modular pipeline (`chunk_docs.py` → `build_vector_store.py` → `main.py`), each stage independently testable and sanity-checked before the next was built (see Step 8 retrieval smoke tests during development).
 - **Documentation** — this README, plus in-repo comments explaining the grounding/threshold logic and system prompt design choices.
-- **Presentation** — live demo covering a real grounded Q&A, the RTI drafting flow, and an adversarial-robustness edge case (see demo video).
+- **Presentation** — live demo covering a real grounded Q&A, the RTI drafting flow, and an adversarial-robustness edge case (see demo video:- https://youtu.be/6V6QkTZWlpo).
